@@ -1,0 +1,39 @@
+---
+title: "Testing out phylogenetic models in nimble"
+output: html_notebook
+---
+
+I've decided to try and implement some basic phylogenetic models in the `nimble` package. I'm doing this for several reasons. Firstly, implementing methods is a great way to understand them better. we often take for granted some of the simple models we use as scientists, because they are so fundamental, and therefore we often are not aware of some of the basic assumptions that they have, and which have been propagtated to the more complicated analyses that have been built on top of them. the second major reason is that I really like `nimble` and would love to be able to run some phylogenetic models in it. So I am going to give some simple stuff a try and see if there is potential here to upgrade `nimble` with a full-fledged phylogeny package.
+
+I am going to start with a basic model of discrete traits evolving on a phylogenetic tree. This is the classic Felsenstein models upon which models of DNA evolution are also based. The likelihood of a set of discrete traits at the tips of a phylogeny is based on a continuous time markov chain model. I am going to use the package `diversitree` to compare my implementation to, which implements the likelihood calculations for this model as well.
+
+First let's simulate some data to play with. For the time being at least I am going to restrict my implementation to working with ultrametric phylogenies.
+
+```{r}
+library(ape)
+library(diversitree)
+tree <- rcoal(10)
+plot(tree)
+
+set.seed(9102017)
+pars <- c(.1,  .15,  .2,  # lambda 1, 2, 3
+          .03, .045, .06, # mu 1, 2, 3
+          .05, 0,         # q12, q13
+          .05, .05,       # q21, q23
+          0,   .05)       # q31, q32
+
+set.seed(2)
+phy <- tree.musse(pars, max.taxa = 30, x0=1)
+plot(phy)
+phy$tip.state
+```
+
+Now we'll use `diversitree` to make a likelihood calculating function for this data.
+
+```{r}
+mkn_lik <- make.mkn(phy, phy$tip.state, 3)
+mkn_lik_fun <- mkn_lik
+class(mkn_lik_fun) <- "function"
+```
+
+
