@@ -79,3 +79,6 @@ get_ordering_nimble <- nimbleFunction(
 test2 <- get_ordering_nimble(children, n.tip, root)
 test2
 
+library(phangorn)
+
+
